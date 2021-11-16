@@ -1,0 +1,30 @@
+{
+  "name": "@lbreda/antenati-dl",
+  "version": "1.0.0",
+  "description": "Downloader for MIBAC Antenati",
+  "keywords": [
+    "mibac",
+    "antenati"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lorenzo Breda <lorenzo@lbreda.com>",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "node-fetch": "^3.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/LBreda/antenati-dl.git"
+  },
+  "publishConfig": {
+    "registry":"https://npm.pkg.github.com"
+  },
+  "bin": {
+    "antenati-dl": "index.js"
+  },
+  "type": "module"
+}
