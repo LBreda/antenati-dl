@@ -23,10 +23,14 @@ You may need administrative powers.
 You can run:
 
 ```bash
-antenati-dl URL
+antenati-dl URL [offset] [limit]
 ```
 
-with the URL being the IIIF Manifest URL. The script will create a directory
+with the URL being the IIIF Manifest URL, the offset being the first element
+to download (1-based, defaults to 1) and the limit being the number of elements
+to download (defaults to "all elements after the offset").
+
+The script will create a directory
 named by the collection identifier in the Antenati website, and download the
 sequence of images inside the directory.
 

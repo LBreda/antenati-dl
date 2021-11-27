@@ -4,17 +4,22 @@ import fetch from "node-fetch"
 import jsyaml from "js-yaml"
 
 // Retrieves input from the console
-if(process.argv.length < 3) {
-    console.info('Usage: antenati-dl URL')
+if (process.argv.length < 3) {
+    console.info('Usage: antenati-dl URL [offset] [limit]')
+    console.info('  URL: IIIF manifest')
+    console.info('  offset: First element to download (1-based, defaults to 1)')
+    console.info('  limit: How many elements to download (defaults to all elements after offset)')
     process.exit(1)
 }
 let uri = process.argv[2]
+let offset = (parseInt(process.argv[3]) || 1) - 1
+let limit = parseInt(process.argv[4]) || undefined
 
 // Downloads data
-function downloader (data) {
+function downloader(data) {
     // Creates output dir
     let dirname = data.metadata.filter(datum => datum.value.includes('detail-registry'))[0].value.match(/s_id=(\d+)/)[1]
-    !fs.existsSync(`./${dirname}/`) && fs.mkdirSync(`./${dirname}/`, {recursive: true})
+    !fs.existsSync(`./${dirname}/`) && fs.mkdirSync(`./${dirname}/`, { recursive: true })
 
     // Prints some info
     console.info(`Downloading container labeled ${data.label}`)
@@ -28,9 +33,9 @@ function downloader (data) {
     // Downloads images
     data.sequences.forEach(sequence => {
         console.info(`Downloading sequence: ${sequence.label}...`)
-        
-        sequence.canvases.forEach((canvas, index) => {
-            let formattedIndex = `${index+1}`.padStart(5, "0")
+
+        sequence.canvases.slice(offset, limit ? offset + limit : sequence.canvases.length).forEach((canvas, index) => {
+            let formattedIndex = `${index + 1 + offset}`.padStart(5, "0")
             canvas.images.forEach((resourceContainer, resourceIndex) => {
                 let suffix = canvas.images.length == 1 ? '' : `_${resourceIndex}`
                 let fileName = `${dirname}_${formattedIndex}${suffix}.jpg`
@@ -43,18 +48,20 @@ function downloader (data) {
 
                         // Writes file
                         fs.appendFile(`./${dirname}/${fileName}`, new Buffer.from(image), (err) => {
-                            if(!err) console.info(`Downloaded ${fileUrl} as ${dirname}/${fileName}`)
-                            else console.error(`Error downloading ${fileUrl} as ${dirname}/${fileName}: ${err}`)
+                            if (!err) console.info(`Downloaded ${fileUrl} as ${dirname}/${fileName}`)
+                            else printError(fileUrl, dirname, fileName, err)
                         })
-                    })
+                    }).catch(err => printError(fileUrl, dirname, fileName, err))
                 } catch (err) {
-                    console.error(`Error downloading ${fileUrl} as ${dirname}/${fileName}: ${err}`)
+                    printError(fileUrl, dirname, fileName, err)
                 }
             })
         })
     });
 
 }
+
+let printError = (fileUrl, dirName, fileName, err) => console.error(`Error downloading ${fileUrl} as ${dirName}/${fileName}: ${err}`)
 
 // Execution
 fetch(uri).then(resource => resource.json()).then(data => downloader(data))
