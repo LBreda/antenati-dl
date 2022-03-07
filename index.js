@@ -15,6 +15,12 @@ let uri = process.argv[2]
 let offset = (parseInt(process.argv[3]) || 1) - 1
 let limit = parseInt(process.argv[4]) || undefined
 
+const reqHeaders = {
+    headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) Gecko/20100101 Firefox/97.0'
+    }
+}
+
 // Downloads data
 function downloader(data) {
     // Creates output dir
@@ -42,7 +48,7 @@ function downloader(data) {
                 let fileUrl = resourceContainer.resource['@id']
 
                 try {
-                    fetch(fileUrl).then(resource => resource.arrayBuffer()).then(image => {
+                    fetch(fileUrl, reqHeaders).then(resource => resource.arrayBuffer()).then(image => {
                         // Removes file if it already exists
                         fs.existsSync(`./${dirname}/${fileName}`) && fs.unlinkSync(`./${dirname}/${fileName}`)
 
@@ -64,8 +70,4 @@ function downloader(data) {
 let printError = (fileUrl, dirName, fileName, err) => console.error(`Error downloading ${fileUrl} as ${dirName}/${fileName}: ${err}`)
 
 // Execution
-fetch(uri, {
-    headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) Gecko/20100101 Firefox/97.0'
-    }
-}).then(resource => resource.json()).then(data => downloader(data))
+fetch(uri, reqHeaders).then(resource => resource.json()).then(data => downloader(data))
