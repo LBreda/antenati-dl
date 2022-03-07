@@ -64,4 +64,8 @@ function downloader(data) {
 let printError = (fileUrl, dirName, fileName, err) => console.error(`Error downloading ${fileUrl} as ${dirName}/${fileName}: ${err}`)
 
 // Execution
-fetch(uri).then(resource => resource.json()).then(data => downloader(data))
+fetch(uri, {
+    headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) Gecko/20100101 Firefox/97.0'
+    }
+}).then(resource => resource.json()).then(data => downloader(data))
