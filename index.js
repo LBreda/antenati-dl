@@ -26,7 +26,7 @@ const reqHeaders = {
 // Downloads data
 function downloader(data) {
     // Creates output dir
-    let dirname = data.metadata.filter(datum => datum.value.includes('detail-registry'))[0].value.match(/s_id=(\d+)/)[1]
+    let dirname = data.metadata.filter(datum => datum.value.includes('/an_ua'))[0].value.match(/an_ua(\d+)/)[1]
     !fs.existsSync(`./${dirname}/`) && fs.mkdirSync(`./${dirname}/`, { recursive: true })
 
     // Prints some info
