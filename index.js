@@ -17,7 +17,9 @@ let limit = parseInt(process.argv[4]) || undefined
 
 const reqHeaders = {
     headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) Gecko/20100101 Firefox/97.0'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) Gecko/20100101 Firefox/97.0',
+        'Origin': 'https://www.antenati.san.beniculturali.it',
+        'Referer': 'https://www.antenati.san.beniculturali.it/'
     }
 }
 
