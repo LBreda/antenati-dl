@@ -10,7 +10,7 @@ if (process.argv.length < 3) {
     console.info('  offset: First element to download (1-based, defaults to 1)')
     console.info('  limit: How many elements to download (defaults to all elements after offset)')
     process.exit(1)
-}
+    }
 let uri = process.argv[2]
 let offset = (parseInt(process.argv[3]) || 1) - 1
 let limit = parseInt(process.argv[4]) || undefined
@@ -22,6 +22,18 @@ const reqHeaders = {
         'Referer': 'https://antenati.cultura.gov.it/',
     }
 }
+
+// Removes last n parts of URL
+function removeLastPartsOf(url, parts_no)
+{
+    parts_no = parts_no ?? 1;
+    var split_url = url.split('/');
+    for (let i = 0; i < parts_no; i++) {
+        split_url.pop();
+    }
+    return( split_url.join('/') );
+}
+
 
 // Downloads data
 function downloader(data) {
@@ -45,21 +57,25 @@ function downloader(data) {
         sequence.canvases.slice(offset, limit ? offset + limit : sequence.canvases.length).forEach((canvas, index) => {
             let formattedIndex = `${index + 1 + offset}`.padStart(5, "0")
             canvas.images.forEach((resourceContainer, resourceIndex) => {
-                let suffix = canvas.images.length == 1 ? '' : `_${resourceIndex}`
+                let suffix = canvas.images.length === 1 ? '' : `_${resourceIndex}`
                 let fileName = `${dirname}_${formattedIndex}${suffix}.jpg`
                 let fileUrl = resourceContainer.resource['@id']
+                let fileInfoUrl = removeLastPartsOf(fileUrl, 4)
 
                 try {
-                    fetch(fileUrl, reqHeaders).then(resource => resource.arrayBuffer()).then(image => {
-                        // Removes file if it already exists
-                        fs.existsSync(`./${dirname}/${fileName}`) && fs.unlinkSync(`./${dirname}/${fileName}`)
+                    fetch(fileInfoUrl, reqHeaders).then(resource => resource.json()).then(fileInfo => {
+                        fileUrl = `${fileInfoUrl}/full/${fileInfo.width},${fileInfo.height}/0/default.jpg`
+                        fetch(fileUrl, reqHeaders).then(resource => resource.arrayBuffer()).then(image => {
+                            // Removes file if it already exists
+                            fs.existsSync(`./${dirname}/${fileName}`) && fs.unlinkSync(`./${dirname}/${fileName}`)
 
-                        // Writes file
-                        fs.appendFile(`./${dirname}/${fileName}`, new Buffer.from(image), (err) => {
-                            if (!err) console.info(`Downloaded ${fileUrl} as ${dirname}/${fileName}`)
-                            else printError(fileUrl, dirname, fileName, err)
-                        })
-                    }).catch(err => printError(fileUrl, dirname, fileName, err))
+                            // Writes file
+                            fs.appendFile(`./${dirname}/${fileName}`, new Buffer.from(image), (err) => {
+                                if (!err) console.info(`Downloaded ${fileUrl} as ${dirname}/${fileName}`)
+                                else printError(fileUrl, dirname, fileName, err)
+                            })
+                        }).catch(err => printError(fileUrl, dirname, fileName, err))
+                    }).catch(err => printError(fileInfoUrl, dirname, fileName, err))
                 } catch (err) {
                     printError(fileUrl, dirname, fileName, err)
                 }
